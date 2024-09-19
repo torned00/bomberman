@@ -28,14 +28,10 @@ function get_action() {
 
     const me = getAIPos(players); // Get current AI player position
 
-    // Define AI priorities:
-    // 1. Avoid bombs and fires
-    // 2. Try to place bombs near destructible objects or enemies
-    // 3. Move strategically towards safe areas or destructible tiles
-
     // Step 1: Check if AI is near danger (bombs or fire)
     if (isBombInRange(me.x, me.y) || isFireInRange(me.x, me.y)) {
-        return findSafeMove(me, actions); // Move to safety if in danger
+        const safeMove = findSafeMove(me, actions);
+        if (safeMove) return safeMove; // Move to safety if in danger
     }
 
     // Step 2: Check if AI can place a bomb near a destructible block or enemy
@@ -64,8 +60,10 @@ function getAIPos(players) {
 function isBombInRange(x, y) {
     const bombs = getBombsInfo();
     for (const bomb of bombs) {
-        // Bomb has a range of 3 tiles in both directions
-        if ((bomb.x === x && Math.abs(bomb.y - y) <= 3) || (bomb.y === y && Math.abs(bomb.x - x) <= 3)) {
+        const bombRange = 3; // Standard bomb explosion range
+        // Check if the bomb is in the same row/column and within range
+        if ((bomb.x === x && Math.abs(bomb.y - y) <= bombRange) || 
+            (bomb.y === y && Math.abs(bomb.x - x) <= bombRange)) {
             return true;
         }
     }
@@ -76,7 +74,8 @@ function isBombInRange(x, y) {
 function isFireInRange(x, y) {
     const fires = getFiresInfo();
     for (const fire of fires) {
-        if ((fire.x === x && Math.abs(fire.y - y) <= 1) || (fire.y === y && Math.abs(fire.x - x) <= 1)) {
+        if ((fire.x === x && Math.abs(fire.y - y) <= 1) || 
+            (fire.y === y && Math.abs(fire.x - x) <= 1)) {
             return true;
         }
     }
@@ -88,16 +87,16 @@ function findSafeMove(me, actions) {
     const safeMoves = [];
 
     // Check all available moves (up, down, left, right) for safety
-    if (actions.includes('move_up') && !isBombInRange(me.x, me.y - 1) && !isFireInRange(me.x, me.y - 1)) {
+    if (actions.includes('move_up') && isValidTile(me.x, me.y - 1) && !isBombInRange(me.x, me.y - 1) && !isFireInRange(me.x, me.y - 1)) {
         safeMoves.push('move_up');
     }
-    if (actions.includes('move_down') && !isBombInRange(me.x, me.y + 1) && !isFireInRange(me.x, me.y + 1)) {
+    if (actions.includes('move_down') && isValidTile(me.x, me.y + 1) && !isBombInRange(me.x, me.y + 1) && !isFireInRange(me.x, me.y + 1)) {
         safeMoves.push('move_down');
     }
-    if (actions.includes('move_left') && !isBombInRange(me.x - 1, me.y) && !isFireInRange(me.x - 1, me.y)) {
+    if (actions.includes('move_left') && isValidTile(me.x - 1, me.y) && !isBombInRange(me.x - 1, me.y) && !isFireInRange(me.x - 1, me.y)) {
         safeMoves.push('move_left');
     }
-    if (actions.includes('move_right') && !isBombInRange(me.x + 1, me.y) && !isFireInRange(me.x + 1, me.y)) {
+    if (actions.includes('move_right') && isValidTile(me.x + 1, me.y) && !isBombInRange(me.x + 1, me.y) && !isFireInRange(me.x + 1, me.y)) {
         safeMoves.push('move_right');
     }
 
@@ -178,3 +177,4 @@ function isPlayerNearby(x, y) {
     }
     return false;
 }
+
